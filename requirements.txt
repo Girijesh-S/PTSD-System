@@ -1,0 +1,10 @@
+streamlit==1.28.0
+transformers==4.36.2
+librosa==0.10.1
+matplotlib==3.8.2
+scikit-learn==1.4.0
+pandas==2.2.0
+numpy==1.26.3
+soundfile==0.12.1
+plotly==5.17.0
+PyAudio==0.2.14
