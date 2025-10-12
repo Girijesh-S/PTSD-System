@@ -20,6 +20,8 @@ This project leverages a *Transformer-based architecture* for *emotion recogniti
 
 Wav2Vec2 processes the speech to extract meaningful features for emotion recognition.
 
+---
+
 ### Transformer-based Emotion Classifier
 
 The *Transformer-based model* utilizes features from Wav2Vec2 and performs emotion classification using the following architecture:
@@ -29,6 +31,8 @@ The *Transformer-based model* utilizes features from Wav2Vec2 and performs emoti
 - *Feed-Forward Network (FNN): Multi-layer fully connected network (FNN) with **ReLU* activation.
 - *Softmax Output*: Softmax activation provides probabilities for each emotion class.
 
+---
+
 ### Model Enhancements and Regularization
 
 Key enhancements have been made to the Transformer-based architecture:
@@ -37,10 +41,14 @@ Key enhancements have been made to the Transformer-based architecture:
 - *Feature Projection*: Projects the Wav2Vec2 features to a larger hidden space to increase capacity.
 - *Larger Feedforward Networks*: Helps capture richer representations of input data.
 
+---
+
 Regularization techniques applied:
 - *Dropout*: Prevents overfitting by randomly dropping units during training.
 - *Batch Normalization*: Normalizes activations to speed up training and improve generalization.
 - *Weight Initialization: Uses **Xavier uniform initialization* for better convergence.
+
+---
 
 ### RAVDESS Dataset
 
@@ -49,9 +57,13 @@ The *RAVDESS (Ryerson Audio-Visual Database of Emotional Speech and Song)* datas
 - *24 Actors*: Includes 24 different actors performing these emotions.
 - *1,440 WAV Files*: Each file contains a speech recording with an emotional label.
 
+---
+
 #### Dataset Split:
 - *Training*: 80% (1152 files).
 - *Testing*: 20% (288 files).
+
+---
 
 ### Model Training and Evaluation
 
@@ -68,8 +80,28 @@ The model is trained using the following setup:
 - *F1-Score*: 70.0%.
 - *Average Confidence*: 95.2%.
 
+---
+
 #### Confusion Matrix:
 A confusion matrix is used to show the performance of the classifier across different emotions.
+
+---
+
+## 📸 Screenshots
+
+Screenshots are available in the `/screenshots` folder.  
+Example:
+
+![Home](screenshots/Screenshot%202025-07-21%20204501.png)
+![Register](screenshots/Screenshot%202025-07-21%20204523.png)
+![Login](screenshots/Screenshot%202025-07-21%20204550.png)
+![Categories](screenshots/Screenshot%202025-07-21%20204427.png)
+![Fruits](screenshots/Screenshot%202025-07-21%20204150.png)
+![Cart](screenshots/Screenshot%202025-07-21%20204225.png)
+![OrderHistory](screenshots/Screenshot%202025-07-21%20204104.png)
+
+---
+
 
 ## Acknowledgments
 - Wav2Vec2: Hugging Face and Facebook AI Research.
