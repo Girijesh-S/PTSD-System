@@ -4,6 +4,8 @@
 
 This project leverages a *Transformer-based architecture* for *emotion recognition* from speech. The system uses the *Wav2Vec2 model* for *speech feature extraction, followed by a **Transformer-based Emotion Classifier. The system is designed to classify emotions in speech, specifically for **Post-Traumatic Stress Disorder (PTSD)* detection.
 
+--
+
 ## Features
 
 ### Wav2Vec2 Feature Extraction
