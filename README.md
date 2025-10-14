@@ -92,13 +92,13 @@ A confusion matrix is used to show the performance of the classifier across diff
 Screenshots are available in the `/screenshots` folder.  
 Example:
 
-![Home](screenshots/Screenshot%202025-07-21%20204501.png)
-![Register](screenshots/Screenshot%202025-07-21%20204523.png)
-![Login](screenshots/Screenshot%202025-07-21%20204550.png)
-![Categories](screenshots/Screenshot%202025-07-21%20204427.png)
-![Fruits](screenshots/Screenshot%202025-07-21%20204150.png)
-![Cart](screenshots/Screenshot%202025-07-21%20204225.png)
-![OrderHistory](screenshots/Screenshot%202025-07-21%20204104.png)
+![Img1](screenshots/Screenshot%202025-10-12%20191312.png)
+![Img2](screenshots/Screenshot%202025-10-12%20191324.png)
+![Img3](screenshots/Screenshot%202025-10-12%20191345.png)
+![Img4](screenshots/Screenshot%202025-10-12%20191352.png)
+![Img5](screenshots/Screenshot%202025-10-12%20191401.png)
+![Img6](screenshots/Screenshot%202025-10-12%20191455.png)
+
 
 ---
 
