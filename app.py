@@ -36,29 +36,40 @@ except ImportError as e:
 
 class RealTimeRecorder:
     def __init__(self):
+        self.audio = None
+        self.is_recording = False
+        self.frames = []
+        self._initialize_audio()
+    
+    def _initialize_audio(self):
+        """Initialize audio system"""
         try:
             self.audio = pyaudio.PyAudio()
-            self.is_recording = False
-            self.frames = []
+            # Test if we can access microphone
+            device_info = self.audio.get_default_input_device_info()
+            st.sidebar.success(f"🎤 Microphone: {device_info['name']}")
         except Exception as e:
-            st.error(f"❌ Microphone initialization failed: {e}")
+            st.error(f"❌ Cannot access microphone: {e}")
             self.audio = None
     
-    def record_audio(self, duration=5, sample_rate=16000, channels=1, chunk_size=1024):
+    def record_audio(self, duration=5):
         """Record audio for specified duration"""
+        if self.audio is None:
+            st.error("❌ Audio system not available")
+            return None
+            
         self.frames = []
         
-        if self.audio is None:
-            st.error("❌ Audio system not initialized")
-            return None
-        
         try:
-            # Check available devices
-            info = self.audio.get_default_input_device_info()
-            st.info(f"🎙️ Using microphone: {info['name']}")
+            # Audio settings
+            sample_rate = 16000
+            channels = 1
+            chunk_size = 1024
+            format_type = pyaudio.paInt16
             
+            # Open stream
             stream = self.audio.open(
-                format=pyaudio.paInt16,
+                format=format_type,
                 channels=channels,
                 rate=sample_rate,
                 input=True,
@@ -67,80 +78,82 @@ class RealTimeRecorder:
             
             st.info(f"🎙️ Recording for {duration} seconds... Speak now!")
             
-            # Calculate chunks needed
+            # Calculate total chunks needed
             chunks_needed = int((sample_rate / chunk_size) * duration)
             
-            # Record audio with progress
+            # Record with progress
             progress_bar = st.progress(0)
-            for i in range(chunks_needed):
-                data = stream.read(chunk_size, exception_on_overflow=False)
-                self.frames.append(data)
-                # Update progress
-                progress_bar.progress((i + 1) / chunks_needed)
+            status_text = st.empty()
             
+            for i in range(chunks_needed):
+                try:
+                    data = stream.read(chunk_size, exception_on_overflow=False)
+                    self.frames.append(data)
+                    
+                    # Update progress
+                    progress = (i + 1) / chunks_needed
+                    progress_bar.progress(progress)
+                    status_text.text(f"Recording... {int(progress * 100)}%")
+                    
+                except Exception as e:
+                    st.warning(f"Audio chunk error: {e}")
+                    continue
+            
+            # Clean up stream
             stream.stop_stream()
             stream.close()
             progress_bar.empty()
+            status_text.empty()
             
-            # Verify we recorded actual audio
-            if len(self.frames) == 0:
-                st.error("❌ No audio data recorded")
+            # Check if we got any audio
+            if not self.frames:
+                st.error("❌ No audio data captured")
                 return None
             
             # Save to temporary file
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
-            success = self._save_wav(temp_file.name, sample_rate, channels)
-            
-            if success:
-                # Verify the file was created and has content
-                file_size = os.path.getsize(temp_file.name)
-                if file_size > 100:  # Minimum file size check
+            if self._save_wav(temp_file.name, sample_rate, channels, format_type):
+                # Verify the file
+                if os.path.exists(temp_file.name) and os.path.getsize(temp_file.name) > 1000:
                     st.success("✅ Recording completed!")
-                    
-                    # Calculate actual duration from frames
-                    total_bytes = len(b''.join(self.frames))
-                    bytes_per_second = sample_rate * channels * 2  # 2 bytes per sample for paInt16
-                    actual_duration = total_bytes / bytes_per_second
-                    
-                    st.info(f"📊 Recorded {actual_duration:.2f} seconds of audio")
                     return temp_file.name
                 else:
-                    st.error("❌ Recorded file is too small")
+                    st.error("❌ Recorded file is empty or too small")
                     os.unlink(temp_file.name)
                     return None
             else:
                 return None
-            
+                
         except Exception as e:
-            st.error(f"❌ Recording failed: {e}")
-            # Provide troubleshooting tips
+            st.error(f"❌ Recording failed: {str(e)}")
             st.info("""
-            **Troubleshooting tips:**
-            - Check if microphone is connected and not used by another application
-            - Ensure microphone permissions are granted
-            - Try a different recording duration
-            - Check if your microphone is working in system settings
+            **Troubleshooting:**
+            - Ensure microphone is connected
+            - Grant microphone permissions to Python
+            - Close other applications using microphone
+            - Try a shorter recording duration
             """)
             return None
     
-    def _save_wav(self, filename, sample_rate, channels):
+    def _save_wav(self, filename, sample_rate, channels, format_type):
         """Save recorded frames to WAV file"""
         try:
             with wave.open(filename, 'wb') as wf:
                 wf.setnchannels(channels)
-                wf.setsampwidth(self.audio.get_sample_size(pyaudio.paInt16))
+                wf.setsampwidth(self.audio.get_sample_size(format_type))
                 wf.setframerate(sample_rate)
                 wf.writeframes(b''.join(self.frames))
             return True
         except Exception as e:
-            st.error(f"❌ Error saving audio file: {e}")
+            st.error(f"❌ Error saving audio: {e}")
             return False
     
     def close(self):
-        """Clean up"""
-        if hasattr(self, 'audio') and self.audio:
+        """Clean up audio resources"""
+        if self.audio:
             self.audio.terminate()
 
+# ... REST OF YOUR PTSDStreamlitApp CLASS REMAINS EXACTLY THE SAME ...
 class PTSDStreamlitApp:
     def __init__(self):
         self.recorder = RealTimeRecorder()
@@ -183,6 +196,10 @@ class PTSDStreamlitApp:
         """Fallback analysis if model fails to load"""
         try:
             # Use librosa to get actual audio duration
+            if not os.path.exists(audio_path):
+                st.error("❌ Audio file not found")
+                return None
+                
             duration = librosa.get_duration(filename=audio_path)
             audio, sr = librosa.load(audio_path, sr=16000)
             rms = np.sqrt(np.mean(audio**2))
@@ -235,6 +252,10 @@ class PTSDStreamlitApp:
     
     def display_results(self, result):
         """Display analysis results"""
+        if not result:
+            st.error("❌ No analysis results available")
+            return
+            
         st.header("📊 Emotional Analysis Results")
         
         # Main results row
@@ -326,7 +347,8 @@ class PTSDStreamlitApp:
                         if result:
                             self.display_results(result)
                     finally:
-                        os.unlink(audio_path)
+                        if os.path.exists(audio_path):
+                            os.unlink(audio_path)
     
     def realtime_analysis(self):
         st.header("🎤 Real-time Audio Recording")
@@ -373,7 +395,8 @@ class PTSDStreamlitApp:
                             self.display_results(result)
                         
                         # Cleanup
-                        os.unlink(audio_file)
+                        if os.path.exists(audio_file):
+                            os.unlink(audio_file)
         
         with col2:
             st.markdown("### Session Controls")
