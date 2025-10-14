@@ -153,7 +153,6 @@ class RealTimeRecorder:
         if self.audio:
             self.audio.terminate()
 
-# ... REST OF YOUR PTSDStreamlitApp CLASS REMAINS EXACTLY THE SAME ...
 class PTSDStreamlitApp:
     def __init__(self):
         self.recorder = RealTimeRecorder()
@@ -251,7 +250,7 @@ class PTSDStreamlitApp:
             return "✅ LOW RISK: Emotional patterns within normal range. Continue monitoring."
     
     def display_results(self, result):
-        """Display analysis results"""
+        """Display analysis results - AUDIO ANALYSIS SECTION REMOVED"""
         if not result:
             st.error("❌ No analysis results available")
             return
@@ -291,13 +290,7 @@ class PTSDStreamlitApp:
             </div>
             """, unsafe_allow_html=True)
         
-        # Audio metrics - THIS WILL NOW SHOW ACTUAL DURATION
-        st.subheader("🎵 Audio Analysis")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Audio Duration", f"{result.get('audio_duration', 0):.2f}s")
-        with col2:
-            st.metric("Speech Energy", f"{result.get('audio_energy', 0):.4f}")
+        # AUDIO ANALYSIS SECTION REMOVED FROM HERE
         
         # Emotion distribution chart
         st.subheader("🎯 Emotion Probability Distribution")
