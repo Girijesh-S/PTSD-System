@@ -94,12 +94,11 @@ Risk Score is evaulated on Hyper-Arousal, Emotional Numbing, Negative Effect and
 Screenshots are available in the `/screenshots` folder.  
 Example:
 
-![Img1](screenshots/Screenshot%202025-10-12%20191312.png)
-![Img2](screenshots/Screenshot%202025-10-12%20191324.png)
-![Img3](screenshots/Screenshot%202025-10-12%20191345.png)
-![Img4](screenshots/Screenshot%202025-10-12%20191352.png)
-![Img5](screenshots/Screenshot%202025-10-12%20191401.png)
-![Img6](screenshots/Screenshot%202025-10-12%20191455.png)
+![Img1](screenshots/Screenshot%202025-10-14%20151006.png)
+![Img2](screenshots/Screenshot%202025-10-14%20151022.png)
+![Img3](screenshots/Screenshot%202025-10-14%20151034.png)
+![Img4](screenshots/Screenshot%202025-10-14%20151045.png)
+![Img5](screenshots/Screenshot%202025-10-14%20151133.png)
 
 
 ---
