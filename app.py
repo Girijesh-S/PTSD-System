@@ -36,15 +36,27 @@ except ImportError as e:
 
 class RealTimeRecorder:
     def __init__(self):
-        self.audio = pyaudio.PyAudio()
-        self.is_recording = False
-        self.frames = []
+        try:
+            self.audio = pyaudio.PyAudio()
+            self.is_recording = False
+            self.frames = []
+        except Exception as e:
+            st.error(f"❌ Microphone initialization failed: {e}")
+            self.audio = None
     
     def record_audio(self, duration=5, sample_rate=16000, channels=1, chunk_size=1024):
         """Record audio for specified duration"""
         self.frames = []
         
+        if self.audio is None:
+            st.error("❌ Audio system not initialized")
+            return None
+        
         try:
+            # Check available devices
+            info = self.audio.get_default_input_device_info()
+            st.info(f"🎙️ Using microphone: {info['name']}")
+            
             stream = self.audio.open(
                 format=pyaudio.paInt16,
                 channels=channels,
@@ -58,36 +70,76 @@ class RealTimeRecorder:
             # Calculate chunks needed
             chunks_needed = int((sample_rate / chunk_size) * duration)
             
-            # Record audio
+            # Record audio with progress
+            progress_bar = st.progress(0)
             for i in range(chunks_needed):
-                data = stream.read(chunk_size)
+                data = stream.read(chunk_size, exception_on_overflow=False)
                 self.frames.append(data)
+                # Update progress
+                progress_bar.progress((i + 1) / chunks_needed)
             
             stream.stop_stream()
             stream.close()
+            progress_bar.empty()
+            
+            # Verify we recorded actual audio
+            if len(self.frames) == 0:
+                st.error("❌ No audio data recorded")
+                return None
             
             # Save to temporary file
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
-            self._save_wav(temp_file.name, sample_rate, channels)
+            success = self._save_wav(temp_file.name, sample_rate, channels)
             
-            st.success("✅ Recording completed!")
-            return temp_file.name
+            if success:
+                # Verify the file was created and has content
+                file_size = os.path.getsize(temp_file.name)
+                if file_size > 100:  # Minimum file size check
+                    st.success("✅ Recording completed!")
+                    
+                    # Calculate actual duration from frames
+                    total_bytes = len(b''.join(self.frames))
+                    bytes_per_second = sample_rate * channels * 2  # 2 bytes per sample for paInt16
+                    actual_duration = total_bytes / bytes_per_second
+                    
+                    st.info(f"📊 Recorded {actual_duration:.2f} seconds of audio")
+                    return temp_file.name
+                else:
+                    st.error("❌ Recorded file is too small")
+                    os.unlink(temp_file.name)
+                    return None
+            else:
+                return None
             
         except Exception as e:
             st.error(f"❌ Recording failed: {e}")
+            # Provide troubleshooting tips
+            st.info("""
+            **Troubleshooting tips:**
+            - Check if microphone is connected and not used by another application
+            - Ensure microphone permissions are granted
+            - Try a different recording duration
+            - Check if your microphone is working in system settings
+            """)
             return None
     
     def _save_wav(self, filename, sample_rate, channels):
         """Save recorded frames to WAV file"""
-        with wave.open(filename, 'wb') as wf:
-            wf.setnchannels(channels)
-            wf.setsampwidth(self.audio.get_sample_size(pyaudio.paInt16))
-            wf.setframerate(sample_rate)
-            wf.writeframes(b''.join(self.frames))
+        try:
+            with wave.open(filename, 'wb') as wf:
+                wf.setnchannels(channels)
+                wf.setsampwidth(self.audio.get_sample_size(pyaudio.paInt16))
+                wf.setframerate(sample_rate)
+                wf.writeframes(b''.join(self.frames))
+            return True
+        except Exception as e:
+            st.error(f"❌ Error saving audio file: {e}")
+            return False
     
     def close(self):
         """Clean up"""
-        self.audio.terminate()
+        if hasattr(self, 'audio') and self.audio:
+            self.audio.terminate()
 
 class PTSDStreamlitApp:
     def __init__(self):
@@ -130,6 +182,7 @@ class PTSDStreamlitApp:
     def fallback_analysis(self, audio_path):
         """Fallback analysis if model fails to load"""
         try:
+            # Use librosa to get actual audio duration
             duration = librosa.get_duration(filename=audio_path)
             audio, sr = librosa.load(audio_path, sr=16000)
             rms = np.sqrt(np.mean(audio**2))
@@ -159,7 +212,7 @@ class PTSDStreamlitApp:
                 'ptsd_risk': min(risk_score, 1.0),
                 'recommendation': self.get_recommendation(risk_score),
                 'indicators': indicators,
-                'audio_duration': duration,
+                'audio_duration': duration,  # This will now show actual duration
                 'audio_energy': rms
             }
             
@@ -217,7 +270,7 @@ class PTSDStreamlitApp:
             </div>
             """, unsafe_allow_html=True)
         
-        # Audio metrics
+        # Audio metrics - THIS WILL NOW SHOW ACTUAL DURATION
         st.subheader("🎵 Audio Analysis")
         col1, col2 = st.columns(2)
         with col1:
@@ -365,7 +418,7 @@ class PTSDStreamlitApp:
         """)
     
     def main(self):
-        """Main method that was missing"""
+        """Main method"""
         st.title("🎭 PTSD Speech Emotion Recognition System")
         
         # Sidebar navigation
