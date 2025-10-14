@@ -82,8 +82,10 @@ The model is trained using the following setup:
 
 ---
 
-#### Confusion Matrix:
+#### Confusion Matrix & Confidence Score:
 A confusion matrix is used to show the performance of the classifier across different emotions.
+Confidence Score is calculated based on Probabiity-Weights, Distribution and Certainity
+Risk Score is evaulated on Hyper-Arousal, Emotional Numbing, Negative Effect and Vocal Indicators.
 
 ---
 
