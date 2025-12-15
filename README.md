@@ -11,7 +11,7 @@ This project leverages a *Transformer-based architecture* for *emotion recogniti
 ### Wav2Vec2 Feature Extraction
 
 - *Wav2Vec2 Model*: A *pretrained model* used for speech feature extraction.
-- *Input: Raw **WAV files* containing emotional speech.
+- *Input*: Raw *WAV files* containing emotional speech.
 - *Output*: 768D feature vectors representing:
   - *Tone*: Captures variation in pitch and melody.
   - *Frequency*: Represents speech's tonal characteristics.
@@ -28,7 +28,7 @@ The *Transformer-based model* utilizes features from Wav2Vec2 and performs emoti
   
 - *Feature Projection*: A linear layer projects the 768D features into a larger hidden space.
 - *Transformer Encoder*: A multi-layer self-attention mechanism captures complex relationships in the speech data.
-- *Feed-Forward Network (FNN): Multi-layer fully connected network (FNN) with **ReLU* activation.
+- *Feed-Forward Network (FNN)*: Multi-layer fully connected network (FNN) with *ReLU* activation.
 - *Softmax Output*: Softmax activation provides probabilities for each emotion class.
 
 ---
@@ -46,7 +46,7 @@ Key enhancements have been made to the Transformer-based architecture:
 Regularization techniques applied:
 - *Dropout*: Prevents overfitting by randomly dropping units during training.
 - *Batch Normalization*: Normalizes activations to speed up training and improve generalization.
-- *Weight Initialization: Uses **Xavier uniform initialization* for better convergence.
+- *Weight Initialization*: Uses *Xavier uniform initialization* for better convergence.
 
 ---
 
@@ -70,9 +70,9 @@ The *RAVDESS (Ryerson Audio-Visual Database of Emotional Speech and Song)* datas
 The model is trained using the following setup:
 
 - *Batch Processing*: Mini-batches (32 samples per batch).
-- *Optimizer: **Adam optimizer* used for weight updates.
-- *Loss Function: **Cross-Entropy Loss* for multi-class classification.
-- *Epochs: Trained for **10 epochs* with shuffling at the start of each epoch.
+- *Optimizer*: *Adam optimizer* used for weight updates.
+- *Loss Function*: *Cross-Entropy Loss* for multi-class classification.
+- *Epochs*: Trained for *10 epochs* with shuffling at the start of each epoch.
 
 *Evaluation Metrics*:
 - *Accuracy*: 70.8% (73.6% during validation).
