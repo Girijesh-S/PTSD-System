@@ -10,7 +10,7 @@ This project leverages a *Transformer-based architecture* for *emotion recogniti
 
 ### Wav2Vec2 Feature Extraction
 
-- *Wav2Vec2 Model: A **pretrained model* used for speech feature extraction.
+- *Wav2Vec2 Model*: A *pretrained model* used for speech feature extraction.
 - *Input: Raw **WAV files* containing emotional speech.
 - *Output*: 768D feature vectors representing:
   - *Tone*: Captures variation in pitch and melody.
