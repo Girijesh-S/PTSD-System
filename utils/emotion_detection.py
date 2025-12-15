@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 import joblib
 import os
+import librosa  # Add this import
 
 class EmotionClassifier(nn.Module):
     def __init__(self, input_dim=768, num_emotions=8):
@@ -32,21 +33,36 @@ class EmotionDetector:
     def load_models(self):
         """Load trained models"""
         try:
-            # Load your actual trained model here
-            # Example: self.classifier.load_state_dict(torch.load('model_weights.pth'))
-            # Example: self.scaler = joblib.load('scaler.pkl')
-            # Example: self.label_encoder = joblib.load('label_encoder.pkl')
-            
-            self.emotions = ['neutral', 'calm', 'happy', 'sad', 'angry', 'fearful', 'disgust', 'surprised']
+            self.emotions = ['neutral', 'calm', 'happy', 'sad', 'angry', 'fearful', 'disgust', 'surprised', 'no_speech']
             self.label_encoder.fit(self.emotions)
             print("✅ Emotion detector initialized successfully")
         except Exception as e:
             print(f"⚠️ Could not load trained models: {e}")
-            self.emotions = ['neutral', 'calm', 'happy', 'sad', 'angry', 'fearful', 'disgust', 'surprised']
+            self.emotions = ['neutral', 'calm', 'happy', 'sad', 'angry', 'fearful', 'disgust', 'surprised', 'no_speech']
             self.label_encoder.fit(self.emotions)
+    
+    def detect_silence(self, audio, sr=16000, threshold=0.01):
+        """Detect if audio is silent or has speech"""
+        try:
+            if audio is None or len(audio) == 0:
+                return True, 0.0, 0.0
+            
+            rms = np.sqrt(np.mean(audio**2))
+            non_silent_samples = np.sum(np.abs(audio) > threshold)
+            total_samples = len(audio)
+            non_silent_percentage = non_silent_samples / total_samples * 100
+            
+            # Audio is considered silent if RMS is very low OR less than 10% is non-silent
+            is_silent = rms < 0.005 or non_silent_percentage < 10
+            
+            return is_silent, rms, non_silent_percentage
+            
+        except Exception as e:
+            print(f"Error in silence detection: {e}")
+            return True, 0.0, 0.0
         
     def analyze_audio(self, audio_path):
-        """Main analysis function"""
+        """Main analysis function - with silence detection"""
         try:
             from audio_processing import AudioProcessor
             
@@ -54,7 +70,14 @@ class EmotionDetector:
             audio = processor.load_audio(audio_path)
             
             if audio is None:
-                return None
+                return self.no_speech_result()
+            
+            # Check for silence before feature extraction
+            is_silent, rms, non_silent_percentage = self.detect_silence(audio)
+            
+            if is_silent:
+                print(f"⚠️ Silent audio detected: RMS={rms:.6f}, Non-silent={non_silent_percentage:.1f}%")
+                return self.no_speech_result(rms, non_silent_percentage)
             
             features = processor.extract_features(audio)
             
@@ -68,6 +91,22 @@ class EmotionDetector:
         except Exception as e:
             print(f"Error in audio analysis: {e}")
             return self.mock_analysis(None)
+    
+    def no_speech_result(self, rms=0.0, non_silent_percentage=0.0):
+        """Return result for silent/no speech audio"""
+        emotions = ['neutral', 'calm', 'happy', 'sad', 'angry', 'fearful', 'disgust', 'surprised', 'no_speech']
+        probabilities = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+        
+        return {
+            'emotion': 'no_speech',
+            'confidence': 0.0,
+            'all_probabilities': dict(zip(emotions, probabilities)),
+            'ptsd_risk': 0.0,
+            'features_used': 0,
+            'audio_energy': rms,
+            'non_silent_percentage': non_silent_percentage,
+            'is_silent': True
+        }
     
     def predict_emotion(self, features):
         """Actual model prediction - replace with your trained model"""
@@ -86,7 +125,7 @@ class EmotionDetector:
     
     def mock_analysis(self, features):
         """Mock analysis for demo - replace with actual model"""
-        emotions = self.emotions
+        emotions = ['neutral', 'calm', 'happy', 'sad', 'angry', 'fearful', 'disgust', 'surprised']
         
         # If features are available, create more realistic probabilities
         if features is not None and len(features) > 0:
@@ -123,7 +162,8 @@ class EmotionDetector:
             'confidence': float(np.max(probabilities)),
             'all_probabilities': dict(zip(emotions, probabilities)),
             'ptsd_risk': ptsd_risk,
-            'features_used': len(features) if features is not None else 0
+            'features_used': len(features) if features is not None else 0,
+            'is_silent': False
         }
 
 # Global function for easy access

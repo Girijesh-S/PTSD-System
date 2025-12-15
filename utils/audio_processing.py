@@ -95,3 +95,18 @@ class AudioProcessor:
         except Exception as e:
             print(f"Error extracting librosa features: {e}")
             return np.random.rand(30)  # Return random features as last resort
+        
+    def detect_silence(self, audio, sr=16000, threshold=0.01):
+        """Detect if audio is silent or has speech"""
+        if audio is None or len(audio) == 0:
+            return True, 0.0, 0.0
+        
+        rms = np.sqrt(np.mean(audio**2))
+        non_silent_samples = np.sum(np.abs(audio) > threshold)
+        total_samples = len(audio)
+        non_silent_percentage = non_silent_samples / total_samples * 100
+        
+        # Audio is considered silent if RMS is very low OR less than 10% is non-silent
+        is_silent = rms < 0.005 or non_silent_percentage < 10
+        
+        return is_silent, rms, non_silent_percentage

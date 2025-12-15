@@ -254,7 +254,19 @@ class PTSDStreamlitApp:
         if not result:
             st.error("❌ No analysis results available")
             return
-            
+        
+        # Check if no speech was detected
+        if result.get('emotion') == 'no_speech':
+            st.warning("🎤 No Speech Detected")
+            st.info("""
+            **Analysis Results:**
+            - No audible speech detected in the recording
+            - Please ensure you're speaking clearly into the microphone
+            - Check that your microphone is not muted
+            - Try speaking louder or closer to the microphone
+            """)
+            return  # Exit early - no further analysis to show
+        
         st.header("📊 Emotional Analysis Results")
         
         # Main results row
